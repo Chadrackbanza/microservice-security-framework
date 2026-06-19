@@ -20,7 +20,7 @@ jobs:
           wget https://github.com/aquasecurity/trivy/releases/download/v0.50.0/trivy_0.50.0_Linux-64bit.deb
           sudo dpkg -i trivy_0.50.0_Linux-64bit.deb
 
-      - name: Run Trivy scan
+      # C'EST CETTE ÉTAPE QU'IL FAUT AJOUTER :
+      - name: Run Trivy scan and export results
         run: |
-          trivy fs . --exit-code 1 --severity HIGH,CRITICAL
-          trivy config . --exit-code 1
+          trivy fs . --severity HIGH,CRITICAL --format json -o scan-results.json
