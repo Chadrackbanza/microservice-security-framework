@@ -13,7 +13,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Étape 1 : Installation du scanner Trivy
       - name: Install Trivy
         run: |
           sudo apt-get update
@@ -21,19 +20,28 @@ jobs:
           wget https://github.com/aquasecurity/trivy/releases/download/v0.50.0/trivy_0.50.0_Linux-64bit.deb
           sudo dpkg -i trivy_0.50.0_Linux-64bit.deb
 
-      # Étape 2 : Installation du moteur de règles OPA
       - name: Install OPA
         run: |
           wget https://openpolicyagent.org/downloads/latest/opa_linux_amd64
           chmod +x opa_linux_amd64
           sudo mv opa_linux_amd64 /usr/local/bin/opa
 
-      # Étape 3 : Exécution du scan Trivy et export en JSON
       - name: Run Trivy scan and export results
         run: |
           trivy fs . --severity HIGH,CRITICAL --format json -o scan-results.json
 
-      # Étape 4 : Évaluation de la conformité avec OPA
       - name: Evaluate policy with OPA
         run: |
           opa eval --data policy.rego --input scan-results.json "data.security.deny"
+
+      # C'EST CETTE ÉTAPE QU'ON AJOUTE TOUT À LA FIN :
+      - name: Send Slack alert
+        if: failure()  # S'exécute SEULEMENT si Trivy ou OPA détectent une anomalie et bloquent
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          payload: |
+            {
+              "text": "🚨 *Alerte DevOpsSec* : Une vulnérabilité critique ou une non-conformité a été détectée dans le microservice ! Le déploiement est bloqué."
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
