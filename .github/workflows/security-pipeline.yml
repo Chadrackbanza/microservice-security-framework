@@ -13,6 +13,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Étape 1 : Installation du scanner Trivy
       - name: Install Trivy
         run: |
           sudo apt-get update
@@ -20,49 +21,19 @@ jobs:
           wget https://github.com/aquasecurity/trivy/releases/download/v0.50.0/trivy_0.50.0_Linux-64bit.deb
           sudo dpkg -i trivy_0.50.0_Linux-64bit.deb
 
+      # Étape 2 : Installation du moteur de règles OPA
       - name: Install OPA
         run: |
           wget https://openpolicyagent.org/downloads/latest/opa_linux_amd64
           chmod +x opa_linux_amd64
           sudo mv opa_linux_amd64 /usr/local/bin/opa
 
+      # Étape 3 : Exécution du scan Trivy et export en JSON
       - name: Run Trivy scan and export results
         run: |
           trivy fs . --severity HIGH,CRITICAL --format json -o scan-results.json
 
+      # Étape 4 : Évaluation de la conformité avec OPA
       - name: Evaluate policy with OPA
         run: |
           opa eval --data policy.rego --input scan-results.json "data.security.deny"
-
-      # C'EST CETTE ÉTAPE QU'ON AJOUTE TOUT À LA FIN :
-      - name: Send Slack alert
-        if: failure()  # S'exécute SEULEMENT si Trivy ou OPA détectent une anomalie et bloquent
-        uses: slackapi/slack-github-action@v1.23.0
-        with:
-          payload: |
-            {
-              "text": "🚨 *Alerte DevOpsSec* : Une vulnérabilité critique ou une non-conformité a été détectée dans le microservice ! Le déploiement est bloqué."
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-      # AJOUTE CETTE ÉTAPE EN DESSOUS DE SLACK :
-      - name: Send Email Alert
-        if: failure() # S'exécute uniquement en cas d'échec de sécurité
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com # Change selon ton fournisseur (ex: smtp.office365.com)
-          server_port: 465
-          username: ${{ secrets.EMAIL_USERNAME }}
-          password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: "🚨 [DevOpsSec Alert] Non-conformité détectée"
-          to: team@example.com # Remplace par ton adresse email ou celle de ton équipe
-          from: Framework Security Bot
-          secure: true
-          body: |
-            Bonjour,
-            
-            Le pipeline de sécurité a détecté une vulnérabilité CRITIQUE ou une non-conformité dans le projet microservice-security-framework.
-            
-            Le déploiement a été automatiquement BLOQUÉ.
-            Veuillez consulter les logs GitHub Actions ou le tableau de bord DefectDojo pour plus de détails.
