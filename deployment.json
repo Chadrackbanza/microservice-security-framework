@@ -1,0 +1,12 @@
+{
+  "spec": {
+    "containers": [
+      {
+        "name": "test-container",
+        "securityContext": {
+          "runAsUser": 0
+        }
+      }
+    ]
+  }
+}
