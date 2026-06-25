@@ -13,6 +13,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Étape 1 : Installation du scanner Trivy
       - name: Install Trivy
         run: |
           sudo apt-get update
@@ -20,13 +21,24 @@ jobs:
           wget https://github.com/aquasecurity/trivy/releases/download/v0.50.0/trivy_0.50.0_Linux-64bit.deb
           sudo dpkg -i trivy_0.50.0_Linux-64bit.deb
 
-      # C'EST ICI QUE ÇA SE PASSE : On remplace l'ancien scan par celui-ci
+      # Étape 2 : Installation du moteur de règles OPA
+      - name: Install OPA
+        run: |
+          wget https://openpolicyagent.org/downloads/latest/opa_linux_amd64
+          chmod +x opa_linux_amd64
+          sudo mv opa_linux_amd64 /usr/local/bin/opa
+
+      # Étape 3 : Exécution du scan Trivy et export en JSON
       - name: Run Trivy scan and export results
         run: |
           trivy fs . --severity HIGH,CRITICAL --format json -o scan-results.json
 
-      # ÉTAPE SUPPLÉMENTAIRE (Optionnelle mais recommandée) : 
-      # Sauvegarder le fichier JSON sur GitHub pour pouvoir le télécharger si besoin
+      # Étape 4 : Évaluation de la conformité avec OPA
+      - name: Evaluate policy with OPA
+        run: |
+          opa eval --data policy.rego --input scan-results.json "data.security.deny"
+
+      # Étape 5 : Sauvegarde des rapports
       - name: Archive production artifacts
         uses: actions/upload-artifact@v4
         with:
