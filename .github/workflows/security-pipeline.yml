@@ -20,7 +20,7 @@ jobs:
         run: docker build -t microservice-security:latest .
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.12.0
+        uses: aquasecurity/trivy-action@0.11.0
         with:
           image-ref: microservice-security:latest
           format: table
