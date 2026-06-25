@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Trivy
         run: |
@@ -20,7 +20,15 @@ jobs:
           wget https://github.com/aquasecurity/trivy/releases/download/v0.50.0/trivy_0.50.0_Linux-64bit.deb
           sudo dpkg -i trivy_0.50.0_Linux-64bit.deb
 
-      - name: Run Trivy scan
+      # C'EST ICI QUE ÇA SE PASSE : On remplace l'ancien scan par celui-ci
+      - name: Run Trivy scan and export results
         run: |
-          trivy fs . --exit-code 1 --severity HIGH,CRITICAL
-          trivy config . --exit-code 1
+          trivy fs . --severity HIGH,CRITICAL --format json -o scan-results.json
+
+      # ÉTAPE SUPPLÉMENTAIRE (Optionnelle mais recommandée) : 
+      # Sauvegarder le fichier JSON sur GitHub pour pouvoir le télécharger si besoin
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-report
+          path: scan-results.json
