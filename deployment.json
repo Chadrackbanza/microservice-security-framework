@@ -1,12 +1,9 @@
 {
-  "spec": {
-    "containers": [
-      {
-        "name": "test-container",
-        "securityContext": {
-          "runAsUser": 0
-        }
-      }
-    ]
-  }
+  "config": {
+    "https_enabled": true
+  },
+  "container": {
+    "user": "non-root"
+  },
+  "vulnerabilities": []
 }
