@@ -1,0 +1,34 @@
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.log
+
+# --- Django ---
+db.sqlite3
+media/
+staticfiles/
+
+# --- Docker ---
+*.tar
+*.pid
+*.sock
+
+# --- Environnements virtuels ---
+venv/
+.env
+*.env
+
+# --- CI/CD ---
+# Ignorer fichiers temporaires générés par pipelines
+*.coverage
+*.pytest_cache/
+*.tox/
+.cache/
+
+# --- IDE / éditeurs ---
+.vscode/
+.idea/
+*.swp
