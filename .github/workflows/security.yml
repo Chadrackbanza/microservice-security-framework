@@ -1,0 +1,21 @@
+name: Security Pipeline
+
+on: [push]
+
+jobs:
+  trivy-scan:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Toujours commencer par checkout le code
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # 2. Ajoute ton étape Trivy ici
+      - name: Run Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'image'
+          # Remplace 'my-microservice:latest' par le nom de ton image réelle
+          image-ref: 'microservice-security:latest'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
